@@ -1,7 +1,4 @@
 import torch.nn as nn
-import torch
-from torchaudio.transforms import MelScale, MelSpectrogram
-from byol_a.augmentations import PrecomputedNorm
 from .utils import NetworkCommonMixIn
 
 class AudioNTT2020Task6(nn.Module, NetworkCommonMixIn):

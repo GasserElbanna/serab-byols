@@ -4,17 +4,13 @@ https://neuralaudio.ai/hear2021-holistic-evaluation-of-audio-representations.htm
 guidelines
 """
 
-from collections import OrderedDict
-import math
 from typing import Tuple
-
-import librosa
 import torch
 import torch.fft
 from torch import Tensor
+from torchaudio.transforms import MelSpectrogram
 from byol_a.augmentations import PrecomputedNorm
 from byol_a.models.audio_ntt import AudioNTT2020
-from torchaudio.transforms import MelSpectrogram
 from utils import *
 
 
