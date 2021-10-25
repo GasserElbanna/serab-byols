@@ -12,10 +12,9 @@ import librosa
 import torch
 import torch.fft
 from torch import Tensor
-from torchaudio.transforms import MelSpectrogram
 from byol_a.augmentations import PrecomputedNorm
 from byol_a.models.audio_ntt import AudioNTT2020
-
+from torchaudio.transforms import MelSpectrogram
 from utils import *
 
 
@@ -79,6 +78,23 @@ def get_timestamp_embeddings(
         raise ValueError(
             "audio input tensor must be 2D with shape (n_sounds, num_samples)"
         )
+    
+    # These attributes are specific to this baseline model
+    n_fft = 2048
+    win_length = 400
+    hop_length = 160
+    n_mels = 64
+    f_min = 60
+    f_max = 7800
+    to_melspec = MelSpectrogram(
+                        sample_rate=AudioNTT2020.sample_rate,
+                        n_fft=n_fft,
+                        win_length=win_length,
+                        hop_length=hop_length,
+                        n_mels=n_mels,
+                        f_min=f_min,
+                        f_max=f_max,
+                        )
 
     # Make sure the correct model type was passed in
     if not isinstance(model, AudioNTT2020):
@@ -93,15 +109,22 @@ def get_timestamp_embeddings(
     # of audio frames that can be batch processed.
     frames, timestamps = frame_audio(
         audio,
-        frame_size=1024,
+        frame_size=n_fft,
         hop_size=hop_size,
         sample_rate=AudioNTT2020.sample_rate,
     )
-    audio_batches, num_frames, frame_size = frames.shape
+    audio_batches, num_frames, _ = frames.shape
     frames = frames.flatten(end_dim=1)
 
+    melspec_frames = ((to_melspec(frames) + torch.finfo(torch.float).eps).log())
+    print(melspec_frames.shape)
+    normalizer = PrecomputedNorm(compute_stats(melspec_frames))
+    print(compute_stats(melspec_frames))
+    melspec_frames = normalizer(melspec_frames).unsqueeze(0)
+    melspec_frames = melspec_frames.permute(1, 0, 2, 3)
+    
     # We're using a DataLoader to help with batching of frames
-    dataset = torch.utils.data.TensorDataset(frames)
+    dataset = torch.utils.data.TensorDataset(melspec_frames)
     loader = torch.utils.data.DataLoader(
         dataset, batch_size=BATCH_SIZE, shuffle=False, drop_last=False
     )
@@ -113,10 +136,14 @@ def get_timestamp_embeddings(
     for param in model.parameters():
         param.requires_grad = False
     with torch.no_grad():
-        embeddings_list = [model(batch[0]) for batch in loader]
+        # embeddings_list = [model(batch[0]) for batch in loader]
+        embeddings_list = []
+        for batch in loader:
+            print(batch[0].shape)
+            embeddings_list.append(model(batch[0]))
 
-    # Concatenate mini-batches back together and unflatten the frames
-    # to reconstruct the audio batches
+    # # Concatenate mini-batches back together and unflatten the frames
+    # # to reconstruct the audio batches
     embeddings = torch.cat(embeddings_list, dim=0)
     embeddings = embeddings.unflatten(0, (audio_batches, num_frames))
 
@@ -144,6 +171,17 @@ def get_scene_embeddings(
     return embeddings
 
 if __name__ == '__main__':
+    import torchaudio
     file_path = '/home/gelbanna/hdd/serab_byols/checkpoints/default2048_BYOLAs64x96-2105311814-e100-bs256-lr0003-rs42.pth'
     model = load_model(file_path)
+    device = torch.device('cuda')
     print(model.timestamp_embedding_size)
+    audio_files = ['/home/gelbanna/tensorflow_datasets/downloads/extracted/ZIP.recordings_audio.zip/recordings_audio/dev_1.wav',
+                    '/home/gelbanna/tensorflow_datasets/downloads/extracted/ZIP.recordings_audio.zip/recordings_audio/dev_2.wav']
+    waveform1, sample_rate = torchaudio.load(audio_files[0])
+    waveform2, sample_rate = torchaudio.load(audio_files[1])
+    audios = torch.cat((waveform1, waveform2))
+    audios.to(device)
+    print(audios.shape)
+    melspec_frames = get_scene_embeddings(audios, model)
+    print(melspec_frames.shape)

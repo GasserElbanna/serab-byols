@@ -1,11 +1,15 @@
 import torch.nn as nn
-
+import torch
+from torchaudio.transforms import MelScale, MelSpectrogram
+from byol_a.augmentations import PrecomputedNorm
 from .utils import NetworkCommonMixIn
 
 class AudioNTT2020Task6(nn.Module, NetworkCommonMixIn):
     """DCASE2020 Task6 NTT Solution Audio Embedding Network."""
+
     def __init__(self, n_mels, d):
         super().__init__()
+
         self.features = nn.Sequential(
             nn.Conv2d(1, 64, 3, stride=1, padding=1),
             nn.BatchNorm2d(64),
@@ -49,14 +53,21 @@ class AudioNTT2020(AudioNTT2020Task6):
     embedding_size = 2048
     scene_embedding_size = embedding_size
     timestamp_embedding_size = embedding_size
-    
+
+    # These attributes are specific to this baseline model
+    n_fft = 1024
+    win_length = 400
+    hop_length = 160
+    n_mels = 64
+    f_min = 60
+    f_max = 7800
+    epsilon = 1e-4
+
     def __init__(self, n_mels=64, d=512):
         super().__init__(n_mels=n_mels, d=d)
-
+    
     def forward(self, x):
         x = super().forward(x)
-
         x = x.mean(1) + x.amax(1)
-
         assert x.shape[1] == self.d and x.ndim == 2
         return x

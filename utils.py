@@ -8,60 +8,16 @@ import torch
 import torch.nn.functional as F
 from torch import Tensor
 
-def compute_norm_stats(dataset_name, audios, orig_sr, to_melspec):
-    """Compute dataset mean and std for pre-normalization.
-
-    Parameters
-    ----------
-    dataset_name : str
-        Name of the dataset
-    audios : list
-        List of audio samples
-    orig_sr : int
-        Sample rate of the raw audios
-
-    Returns
-    -------
-    stats : list
-        [mean, std] of the dataset
-    """
-    mean = 0.
-    std = 0.
-
-    for int_audio in tqdm(audios, desc=f'Computing stats for {dataset_name}', total=len(audios), ascii=True):
-        # Convert to float
-        if int_audio.max() > np.iinfo(np.int16).max:
-            float_audio = np.float32(int_audio.astype(np.float32) / np.iinfo(np.int32).max)
-        else:
-            float_audio = int_audio.astype(np.float32) / np.iinfo(np.int16).max
-
-        # Resample if needed
-        if orig_sr != _REQUIRED_SAMPLE_RATE:
-            float_audio = librosa.core.resample(
-                float_audio,
-                orig_sr=orig_sr,
-                target_sr=_REQUIRED_SAMPLE_RATE,
-                res_type='kaiser_best'
-            )
-
-        # Convert to tensor
-        float_audio = torch.tensor(float_audio).unsqueeze(0)
-
-        # Compute log-mel-spectrogram
-        lms = (to_melspec(float_audio) + torch.finfo(torch.float).eps).log()
-
+def compute_stats(melspec):
         # Compute mean, std
-        mean += lms.mean()
-        std += lms.std()
+        mean = torch.sum(melspec.mean())
+        std = torch.sum(melspec.std())
 
-    mean /= len(audios)
-    std /= len(audios)
+        mean /= len(melspec)
+        std /= len(melspec)
 
-    stats = [mean.item(), std.item()]
-
-    print(f'Finished {dataset_name}')
-
-    return stats
+        stats = [mean.item(), std.item()]
+        return stats
 
 def frame_audio(
     audio: Tensor, frame_size: int, hop_size: float, sample_rate: int
