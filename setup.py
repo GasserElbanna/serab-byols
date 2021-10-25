@@ -17,16 +17,13 @@ setup(
         "Source Code": "",
     },
     packages=find_packages(exclude=("tests",)),
-    python_requires="=3.8",
+    python_requires="==3.8.10",
     install_requires=[
         "librosa==0.8.1",
-        # otherwise librosa breaks
         "numba==0.48",
-        # tf 2.6.0
         "numpy==1.19.2",
-        "torchaudio==0.9.0",
         "torch",
-        # otherwise librosa breaks
+        "torchaudio==0.9.0",
         "numba==0.48",
     ],
     # extras_require={

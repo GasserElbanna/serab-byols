@@ -11,11 +11,11 @@ from torch import Tensor
 from torchaudio.transforms import MelSpectrogram
 from byol_a.augmentations import PrecomputedNorm
 from byol_a.models.audio_ntt import AudioNTT2020
-from utils import *
+from serab_byols.utils import *
 
 
 # Default hop_size in milliseconds
-TIMESTAMP_HOP_SIZE = 50
+TIMESTAMP_HOP_SIZE = 25
 SCENE_HOP_SIZE = 250
 
 # Number of frames to batch process for timestamp embeddings
@@ -44,7 +44,7 @@ def load_model(model_file_path: str = "") -> torch.nn.Module:
     # if model_name == 'byols':
     model = AudioNTT2020(n_mels=64, d=2048)
     
-    state_dict = torch.load(model_file_path, map_location=torch.device('cuda'))
+    state_dict = torch.load(model_file_path)
     model.load_state_dict(state_dict)
     return model
 
@@ -77,8 +77,8 @@ def get_timestamp_embeddings(
     
     # These attributes are specific to this baseline model
     n_fft = 4096
-    win_length = 400
-    hop_length = 160
+    win_length = 800
+    hop_length = 400
     n_mels = 64
     f_min = 60
     f_max = 7800
@@ -90,7 +90,7 @@ def get_timestamp_embeddings(
                         n_mels=n_mels,
                         f_min=f_min,
                         f_max=f_max,
-                        )
+                        ).to(audio.device)
 
     # Make sure the correct model type was passed in
     if not isinstance(model, AudioNTT2020):
@@ -100,6 +100,9 @@ def get_timestamp_embeddings(
 
     # Send the model to the same device that the audio tensor is on.
     model = model.to(audio.device)
+
+    # Resample audio to 16000 Hz
+    
 
     # Split the input audio signals into frames and then flatten to create a tensor
     # of audio frames that can be batch processed.
@@ -162,15 +165,15 @@ def get_scene_embeddings(
     embeddings = torch.mean(embeddings, dim=1)
     return embeddings
 
-if __name__ == '__main__':
-    import torchaudio
-    file_path = '/home/gelbanna/hdd/serab_byols/checkpoints/default2048_BYOLAs64x96-2105311814-e100-bs256-lr0003-rs42.pth'
-    model = load_model(file_path)
-    device = torch.device('cuda')
-    audio_files = ['/home/gelbanna/hdd/data-backup/PhyLoad/PhyLoad_utterances/subj7/after_sm7_u6.wav',
-                    '/home/gelbanna/hdd/data-backup/PhyLoad/PhyLoad_utterances/subj7/after_sm7_u6.wav']
-    waveform1, sample_rate = torchaudio.load(audio_files[0])
-    waveform2, sample_rate = torchaudio.load(audio_files[1])
-    audios = torch.cat((waveform1, waveform2))
-    audios.to(device)
-    melspec_frames = get_scene_embeddings(audios, model)
+# if __name__ == '__main__':
+#     import torchaudio
+#     file_path = '/home/gelbanna/hdd/serab_byols/checkpoints/default2048_BYOLAs64x96-2105311814-e100-bs256-lr0003-rs42.pth'
+#     model = load_model(file_path)
+#     device = torch.device('cuda')
+#     audio_files = ['/home/gelbanna/hdd/data-backup/PhyLoad/PhyLoad_utterances/subj7/after_sm7_u6.wav',
+#                     '/home/gelbanna/hdd/data-backup/PhyLoad/PhyLoad_utterances/subj7/after_sm7_u6.wav']
+#     waveform1, sample_rate = torchaudio.load(audio_files[0])
+#     waveform2, sample_rate = torchaudio.load(audio_files[1])
+#     audios = torch.cat((waveform1, waveform2))
+#     audios.to(device)
+#     melspec_frames = get_scene_embeddings(audios, model)
