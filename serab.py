@@ -80,7 +80,7 @@ def get_timestamp_embeddings(
         )
     
     # These attributes are specific to this baseline model
-    n_fft = 2048
+    n_fft = 4096
     win_length = 400
     hop_length = 160
     n_mels = 64
@@ -115,11 +115,8 @@ def get_timestamp_embeddings(
     )
     audio_batches, num_frames, _ = frames.shape
     frames = frames.flatten(end_dim=1)
-
     melspec_frames = ((to_melspec(frames) + torch.finfo(torch.float).eps).log())
-    print(melspec_frames.shape)
     normalizer = PrecomputedNorm(compute_stats(melspec_frames))
-    print(compute_stats(melspec_frames))
     melspec_frames = normalizer(melspec_frames).unsqueeze(0)
     melspec_frames = melspec_frames.permute(1, 0, 2, 3)
     
@@ -139,7 +136,6 @@ def get_timestamp_embeddings(
         # embeddings_list = [model(batch[0]) for batch in loader]
         embeddings_list = []
         for batch in loader:
-            print(batch[0].shape)
             embeddings_list.append(model(batch[0]))
 
     # # Concatenate mini-batches back together and unflatten the frames
@@ -175,13 +171,10 @@ if __name__ == '__main__':
     file_path = '/home/gelbanna/hdd/serab_byols/checkpoints/default2048_BYOLAs64x96-2105311814-e100-bs256-lr0003-rs42.pth'
     model = load_model(file_path)
     device = torch.device('cuda')
-    print(model.timestamp_embedding_size)
-    audio_files = ['/home/gelbanna/tensorflow_datasets/downloads/extracted/ZIP.recordings_audio.zip/recordings_audio/dev_1.wav',
-                    '/home/gelbanna/tensorflow_datasets/downloads/extracted/ZIP.recordings_audio.zip/recordings_audio/dev_2.wav']
+    audio_files = ['/home/gelbanna/hdd/data-backup/PhyLoad/PhyLoad_utterances/subj7/after_sm7_u6.wav',
+                    '/home/gelbanna/hdd/data-backup/PhyLoad/PhyLoad_utterances/subj7/after_sm7_u6.wav']
     waveform1, sample_rate = torchaudio.load(audio_files[0])
     waveform2, sample_rate = torchaudio.load(audio_files[1])
     audios = torch.cat((waveform1, waveform2))
     audios.to(device)
-    print(audios.shape)
     melspec_frames = get_scene_embeddings(audios, model)
-    print(melspec_frames.shape)

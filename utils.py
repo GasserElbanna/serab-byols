@@ -9,15 +9,23 @@ import torch.nn.functional as F
 from torch import Tensor
 
 def compute_stats(melspec):
-        # Compute mean, std
-        mean = torch.sum(melspec.mean())
-        std = torch.sum(melspec.std())
+    """Compute statistics of the mel-spectrograms.
 
-        mean /= len(melspec)
-        std /= len(melspec)
+    Parameters
+    ----------
+    melspec : Tensor of shape (n_sounds*n_frames, n_mels, time)
 
-        stats = [mean.item(), std.item()]
-        return stats
+    Returns
+    -------
+    list containing the mean and the standard deviation of the mel-spectrograms"""
+    # Compute mean, std
+    mean = melspec.mean()
+    std = melspec.std()
+    mean /= len(melspec)
+    std /= len(melspec)
+
+    stats = [mean.item(), std.item()]
+    return stats
 
 def frame_audio(
     audio: Tensor, frame_size: int, hop_size: float, sample_rate: int
