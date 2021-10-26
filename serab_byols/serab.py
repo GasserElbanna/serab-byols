@@ -153,16 +153,3 @@ def get_scene_embeddings(
     embeddings, _ = get_timestamp_embeddings(audio, model, hop_size=SCENE_HOP_SIZE)
     embeddings = torch.mean(embeddings, dim=1)
     return embeddings
-
-# if __name__ == '__main__':
-#     import torchaudio
-#     file_path = '/home/gelbanna/hdd/serab_byols/checkpoints/default2048_BYOLAs64x96-2105311814-e100-bs256-lr0003-rs42.pth'
-#     model = load_model(file_path)
-#     device = torch.device('cuda')
-#     audio_files = ['/home/gelbanna/hdd/data-backup/PhyLoad/PhyLoad_utterances/subj7/after_sm7_u6.wav',
-#                     '/home/gelbanna/hdd/data-backup/PhyLoad/PhyLoad_utterances/subj7/after_sm7_u6.wav']
-#     waveform1, sample_rate = torchaudio.load(audio_files[0])
-#     waveform2, sample_rate = torchaudio.load(audio_files[1])
-#     audios = torch.cat((waveform1, waveform2))
-#     audios.to(device)
-#     melspec_frames = get_scene_embeddings(audios, model)
