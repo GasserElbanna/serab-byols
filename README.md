@@ -1,6 +1,6 @@
 # BYOL-S Audio Representaion
 
-A data-driven audio embedding consisting of a pretrained [BYOL-A](https://github.com/nttcslab/byol-a) model with speech samples (BYOL-S). Serves as our submission for the [HEAR 2021 competition](https://neuralaudio.ai/hear2021-holistic-evaluation-of-audio-representations.html) and is implemented based on the [common API](https://neuralaudio.ai/hear2021-holistic-evaluation-of-audio-representations.html#common-api) required by the competition evaluation.
+A data-driven audio embedding consisting of a pretrained [BYOL-S](https://arxiv.org/abs/2110.03414) model with speech samples. Serves as our submission for the [HEAR 2021 competition](https://neuralaudio.ai/hear2021-holistic-evaluation-of-audio-representations.html) and is implemented based on the [common API](https://neuralaudio.ai/hear2021-holistic-evaluation-of-audio-representations.html#common-api) required by the competition evaluation.
 
 
 ### Installation
