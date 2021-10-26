@@ -46,19 +46,12 @@ class AudioNTT2020(AudioNTT2020Task6):
 
     This is an extension of the DCASE 2020 Task 6 NTT Solution Audio Embedding Network.
     """
+    
+    # sample rate and embedding sizes are required model attributes for the HEAR API
     sample_rate = 16000
     embedding_size = 2048
     scene_embedding_size = embedding_size
     timestamp_embedding_size = embedding_size
-
-    # These attributes are specific to this baseline model
-    n_fft = 1024
-    win_length = 400
-    hop_length = 160
-    n_mels = 64
-    f_min = 60
-    f_max = 7800
-    epsilon = 1e-4
 
     def __init__(self, n_mels=64, d=512):
         super().__init__(n_mels=n_mels, d=d)

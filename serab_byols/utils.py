@@ -30,6 +30,8 @@ def frame_audio(
     audio: Tensor, frame_size: int, hop_size: float, sample_rate: int
 ) -> Tuple[Tensor, Tensor]:
     """
+    Adapted from https://github.com/neuralaudio/hear-baseline/hearbaseline/
+    
     Slices input audio into frames that are centered and occur every
     sample_rate * hop_size samples. We round to the nearest sample.
     Args:

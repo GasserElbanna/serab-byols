@@ -5,11 +5,11 @@ long_description = open("README.md", "r").read()
 
 setup(
     name="serab_byols",
-    description="Holistic Evaluation of Audio Representations (HEAR) 2021",
+    description="Data-driven Audio Representation 2021",
     author="Logitech",
     author_email="",
     url="",
-    license="Apache-2.0",
+    license="MIT License",
     long_description=long_description,
     long_description_content_type="text/markdown",
     project_urls={
@@ -26,18 +26,4 @@ setup(
         "torchaudio==0.9.0",
         "numba==0.48",
     ],
-    # extras_require={
-    #     "test": [
-    #         "pytest",
-    #         "pytest-cov",
-    #         "pytest-env",
-    #     ],
-    #     "dev": [
-    #         "pre-commit",
-    #         "black",  # Used in pre-commit hooks
-    #         "pytest",
-    #         "pytest-cov",
-    #         "pytest-env",
-    #     ],
-    # },
 )

@@ -6,7 +6,6 @@ guidelines
 
 from typing import Tuple
 import torch
-import torch.fft
 from torch import Tensor
 from torchaudio.transforms import MelSpectrogram
 from byol_a.augmentations import PrecomputedNorm
@@ -27,21 +26,14 @@ def load_model(model_file_path: str = "") -> torch.nn.Module:
 
     Parameters
     ----------
-
+    model_file_path: str, the path for pretrained model
 
     Returns
     -------
     torch.nn.Module object or a tensorflow "trackable" object
         Model loaded with pre-training weights
-
-    Raises
-    ------
-    ValueError
-        If the model configuration is erroneous
-        N.B. A PyTorch model should be loaded with pre-trained weights
     """
     # Load pretrained weights.
-    # if model_name == 'byols':
     model = AudioNTT2020(n_mels=64, d=2048)
     
     state_dict = torch.load(model_file_path)
@@ -101,9 +93,6 @@ def get_timestamp_embeddings(
     # Send the model to the same device that the audio tensor is on.
     model = model.to(audio.device)
 
-    # Resample audio to 16000 Hz
-    
-
     # Split the input audio signals into frames and then flatten to create a tensor
     # of audio frames that can be batch processed.
     frames, timestamps = frame_audio(
@@ -114,6 +103,8 @@ def get_timestamp_embeddings(
     )
     audio_batches, num_frames, _ = frames.shape
     frames = frames.flatten(end_dim=1)
+
+    # Convert audio frames to Log Mel-spectrograms
     melspec_frames = ((to_melspec(frames) + torch.finfo(torch.float).eps).log())
     normalizer = PrecomputedNorm(compute_stats(melspec_frames))
     melspec_frames = normalizer(melspec_frames).unsqueeze(0)
@@ -132,13 +123,10 @@ def get_timestamp_embeddings(
     for param in model.parameters():
         param.requires_grad = False
     with torch.no_grad():
-        # embeddings_list = [model(batch[0]) for batch in loader]
-        embeddings_list = []
-        for batch in loader:
-            embeddings_list.append(model(batch[0]))
+        embeddings_list = [model(batch[0]) for batch in loader]
 
-    # # Concatenate mini-batches back together and unflatten the frames
-    # # to reconstruct the audio batches
+    # Concatenate mini-batches back together and unflatten the frames
+    # to reconstruct the audio batches
     embeddings = torch.cat(embeddings_list, dim=0)
     embeddings = embeddings.unflatten(0, (audio_batches, num_frames))
 
@@ -150,6 +138,7 @@ def get_scene_embeddings(
     model: torch.nn.Module,
 ) -> Tensor:
     """
+    
     This function returns a single embedding for each audio clip. In this baseline
     implementation we simply summarize the temporal embeddings from
     get_timestamp_embeddings() using torch.mean().
