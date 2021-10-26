@@ -17,7 +17,7 @@ setup(
         "Source Code": "",
     },
     packages=find_packages(exclude=("tests",)),
-    python_requires="==3.8.10",
+    python_requires=">=3.8",
     install_requires=[
         "librosa==0.8.1",
         "numba==0.48",
