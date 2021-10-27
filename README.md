@@ -44,5 +44,5 @@ embeddings = serab_byols.get_scene_embeddings(audio, model)
 ```
 
 The `get_timestamp_embeddings` method works exactly the same but returns an array
-of embeddings computed every 25ms over the duration of the input audio. An array
+of embeddings computed every 50ms over the duration of the input audio. An array
 of timestamps corresponding to each embedding is also returned.
