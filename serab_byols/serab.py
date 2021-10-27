@@ -14,8 +14,7 @@ from serab_byols.utils import *
 
 
 # Default hop_size in milliseconds
-TIMESTAMP_HOP_SIZE = 25
-SCENE_HOP_SIZE = 250
+TIMESTAMP_HOP_SIZE = 50
 
 # Number of frames to batch process for timestamp embeddings
 BATCH_SIZE = 512
@@ -68,9 +67,9 @@ def get_timestamp_embeddings(
         )
     
     # These attributes are specific to this baseline model
-    n_fft = 4096
-    win_length = 800
-    hop_length = 400
+    n_fft = 1024
+    win_length = 400
+    hop_length = 160
     n_mels = 64
     f_min = 60
     f_max = 7800
@@ -97,7 +96,7 @@ def get_timestamp_embeddings(
     # of audio frames that can be batch processed.
     frames, timestamps = frame_audio(
         audio,
-        frame_size=n_fft,
+        frame_size=16000,
         hop_size=hop_size,
         sample_rate=AudioNTT2020.sample_rate,
     )
@@ -138,7 +137,6 @@ def get_scene_embeddings(
     model: torch.nn.Module,
 ) -> Tensor:
     """
-    
     This function returns a single embedding for each audio clip. In this baseline
     implementation we simply summarize the temporal embeddings from
     get_timestamp_embeddings() using torch.mean().
@@ -150,6 +148,23 @@ def get_scene_embeddings(
         - embeddings, A float32 Tensor with shape
             (n_sounds, model.scene_embedding_size).
     """
-    embeddings, _ = get_timestamp_embeddings(audio, model, hop_size=SCENE_HOP_SIZE)
-    embeddings = torch.mean(embeddings, dim=1)
+    # These attributes are specific to this baseline model
+    n_fft = 1024
+    win_length = 400
+    hop_length = 160
+    n_mels = 64
+    f_min = 60
+    f_max = 7800
+    to_melspec = MelSpectrogram(
+                        sample_rate=AudioNTT2020.sample_rate,
+                        n_fft=n_fft,
+                        win_length=win_length,
+                        hop_length=hop_length,
+                        n_mels=n_mels,
+                        f_min=f_min,
+                        f_max=f_max,
+                        ).to(audio.device)
+    stats = compute_scene_stats(audio, to_melspec)
+    normalizer = PrecomputedNorm(stats)
+    embeddings = generate_byols_embeddings(model, audio, to_melspec, normalizer)
     return embeddings

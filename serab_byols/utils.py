@@ -1,11 +1,28 @@
 """
 Utility functions for hear-kit
 """
-
+import numpy as np
+from tqdm import tqdm
 from typing import Tuple
 import torch
 import torch.nn.functional as F
 from torch import Tensor
+
+def compute_scene_stats(audios, to_melspec):
+    mean = 0.
+    std = 0.
+    for audio in audios:
+        # Compute log-mel-spectrogram
+        lms = (to_melspec(audio) + torch.finfo(torch.float).eps).log()
+
+        # Compute mean, std
+        mean += lms.mean()
+        std += lms.std()
+
+    mean /= len(audios)
+    std /= len(audios)
+    stats = [mean.item(), std.item()]
+    return stats
 
 def compute_stats(melspec):
     """Compute statistics of the mel-spectrograms.
@@ -76,3 +93,46 @@ def frame_audio(
     timestamps_tensor = timestamps_tensor.expand(audio.shape[0], -1)
 
     return torch.stack(frames, dim=1), timestamps_tensor
+
+def generate_byols_embeddings(
+    model,
+    audios,
+    to_melspec,
+    normalizer):
+    """
+    Generate audio embeddings from a pretrained feature extractor.
+
+    Converts audios to float, resamples them to the desired learning_rate,
+    and produces the embeddings from a pre-trained model.
+
+    Adapted from https://github.com/google-research/google-research/tree/master/non_semantic_speech_benchmark
+
+    Parameters
+    ----------
+    model : torch.nn.Module object or a tensorflow "trackable" object
+        Model loaded with pre-training weights
+    audios : list
+        List of audios, loaded as a numpy arrays
+    to_melspec : torchaudio.transforms.MelSpectrogram object
+        Mel-spectrogram transform to create a spectrogram from an audio signal
+    normalizer : nn.Module
+        Pre-normalization transform
+    device : torch.device object
+        Used device (CPU or GPU)
+
+    Returns
+    ----------
+    embeddings: Tensor
+        2D Array of embeddings for each audio of size (N, M). N = number of samples, M = embedding dimension
+    """
+    embeddings = []
+    model.eval()
+    for param in model.parameters():
+        param.requires_grad = False
+    with torch.no_grad():
+        for audio in tqdm(audios, desc=f'Generating Embeddings...', total=len(audios)):
+            lms = normalizer((to_melspec(audio) + torch.finfo(torch.float).eps).log()).unsqueeze(0)
+            embedding = model(lms.to(audio.device))
+            embeddings.append(embedding)
+    embeddings = torch.cat(embeddings, dim=0)
+    return embeddings
