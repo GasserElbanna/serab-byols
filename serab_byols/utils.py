@@ -131,7 +131,7 @@ def generate_byols_embeddings(
         param.requires_grad = False
     with torch.no_grad():
         for audio in tqdm(audios, desc=f'Generating Embeddings...', total=len(audios)):
-            lms = normalizer((to_melspec(audio) + torch.finfo(torch.float).eps).log()).unsqueeze(0)
+            lms = normalizer((to_melspec(audio.unsqueeze(0)) + torch.finfo(torch.float).eps).log()).unsqueeze(0)
             embedding = model(lms.to(audio.device))
             embeddings.append(embedding)
     embeddings = torch.cat(embeddings, dim=0)
