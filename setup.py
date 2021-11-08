@@ -24,7 +24,6 @@ setup(
         "numpy==1.19.2",
         "torch",
         "torchaudio==0.9.0",
-        "numba==0.48",
         "tqdm==4.61.1",
     ],
 )
