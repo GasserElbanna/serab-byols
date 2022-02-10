@@ -5,11 +5,14 @@ guidelines
 """
 
 from typing import Tuple
+from easydict import EasyDict
 import torch
 from torch import Tensor
 from torchaudio.transforms import MelSpectrogram
 from byol_a.augmentations import PrecomputedNorm
 from byol_a.models.audio_ntt import AudioNTT2020
+from byol_a.models.cvt import CvT
+from byol_a.common import load_yaml_config
 from serab_byols.utils import *
 
 
@@ -19,21 +22,64 @@ TIMESTAMP_HOP_SIZE = 50
 # Number of frames to batch process for timestamp embeddings
 BATCH_SIZE = 512
 
+def get_model(model_name: str="", cfg: EasyDict={}) -> torch.nn.Module:
+    """Define the model object.
 
-def load_model(model_file_path: str = "") -> torch.nn.Module:
+    Parameters
+    ----------
+    model_name: str, the name for pretrained model
+    cfg: dict, the cfg parameters
+
+    Returns
+    -------
+    torch.nn.Module object or a tensorflow "trackable" object
+    """
+    if model_name == 'default':
+        model = AudioNTT2020(n_mels=cfg.n_mels, d=cfg.feature_d)
+
+    elif model_name == 'cvt':
+        s1_depth, s2_depth, s3_depth = cfg.depths
+        s1_emb_dim, s2_emb_dim, s3_emb_dim = cfg.embed_dims
+        s1_mlp_mult, s2_mlp_mult, s3_mlp_mult = cfg.mlp_mults
+
+        model = CvT(
+            s1_emb_dim=s1_emb_dim,
+            s1_depth=s1_depth,
+            s1_mlp_mult=s1_mlp_mult,
+            s2_emb_dim=s2_emb_dim,
+            s2_depth=s2_depth,
+            s2_mlp_mult=s2_mlp_mult,
+            s3_emb_dim=s3_emb_dim,
+            s3_depth=s3_depth,
+            s3_mlp_mult=s3_mlp_mult,
+            pool=cfg.cvt_pool
+        )
+    else:
+        raise ValueError('Model not found.')
+    return model
+
+
+def load_model(model_name: str = "", model_file_path: str = "", cfg_path: str = "./config.yaml") -> torch.nn.Module:
     """Load pre-trained DL models.
 
     Parameters
     ----------
+    model_name: str, the name for pretrained model
     model_file_path: str, the path for pretrained model
+    cfg_path: str, the path for yaml file including parameters value
 
     Returns
     -------
     torch.nn.Module object or a tensorflow "trackable" object
         Model loaded with pre-training weights
     """
+    assert model_name in model_file_path.split('_')[0], "The checkpoint doesn't match with the selected model name"
+
+    # Load config file
+    cfg = load_yaml_config(cfg_path)
+
     # Load pretrained weights.
-    model = AudioNTT2020(n_mels=64, d=2048)
+    model = get_model(model_name, cfg)
     
     state_dict = torch.load(model_file_path)
     model.load_state_dict(state_dict)
@@ -42,7 +88,9 @@ def load_model(model_file_path: str = "") -> torch.nn.Module:
 def get_timestamp_embeddings(
     audio: Tensor,
     model: torch.nn.Module,
+    frame_duration: float = 1000,
     hop_size: float = TIMESTAMP_HOP_SIZE,
+    cfg_path: str = './config.yaml'
 ) -> Tuple[Tensor, Tensor]:
     """
     This function returns embeddings at regular intervals centered at timestamps. Both
@@ -50,9 +98,11 @@ def get_timestamp_embeddings(
     Args:
         audio: n_sounds x n_samples of mono audio in the range [-1, 1].
         model: Loaded model.
+        frame_duration: Frame (segement) duration in milliseconds
         hop_size: Hop size in milliseconds.
             NOTE: Not required by the HEAR API. We add this optional parameter
             to improve the efficiency of scene embedding.
+        cfg_path: str, the path for yaml file including parameters value
     Returns:
         - Tensor: embeddings, A float32 Tensor with shape (n_sounds, n_timestamps,
             model.timestamp_embedding_size).
@@ -65,29 +115,18 @@ def get_timestamp_embeddings(
         raise ValueError(
             "audio input tensor must be 2D with shape (n_sounds, num_samples)"
         )
-    
-    # These attributes are specific to this baseline model
-    n_fft = 1024
-    win_length = 400
-    hop_length = 160
-    n_mels = 64
-    f_min = 60
-    f_max = 7800
-    to_melspec = MelSpectrogram(
-                        sample_rate=AudioNTT2020.sample_rate,
-                        n_fft=n_fft,
-                        win_length=win_length,
-                        hop_length=hop_length,
-                        n_mels=n_mels,
-                        f_min=f_min,
-                        f_max=f_max,
-                        ).to(audio.device)
 
-    # Make sure the correct model type was passed in
-    if not isinstance(model, AudioNTT2020):
-        raise ValueError(
-            f"Model must be an instance of {AudioNTT2020.__name__}"
-        )
+    # Load config file
+    cfg = load_yaml_config(cfg_path)
+    to_melspec = MelSpectrogram(
+                        sample_rate=cfg.sample_rate,
+                        n_fft=cfg.n_fft,
+                        win_length=cfg.win_length,
+                        hop_length=cfg.hop_length,
+                        n_mels=cfg.n_mels,
+                        f_min=cfg.f_min,
+                        f_max=cfg.f_max,
+                        ).to(audio.device)
 
     # Send the model to the same device that the audio tensor is on.
     model = model.to(audio.device)
@@ -96,9 +135,9 @@ def get_timestamp_embeddings(
     # of audio frames that can be batch processed.
     frames, timestamps = frame_audio(
         audio,
-        frame_size=16000,
+        frame_size=(frame_duration/1000)*cfg.sample_rate,
         hop_size=hop_size,
-        sample_rate=AudioNTT2020.sample_rate,
+        sample_rate=cfg.sample_rate,
     )
     audio_batches, num_frames, _ = frames.shape
     frames = frames.flatten(end_dim=1)
@@ -135,6 +174,7 @@ def get_timestamp_embeddings(
 def get_scene_embeddings(
     audio: Tensor,
     model: torch.nn.Module,
+    cfg_path: str = './config.yaml'
 ) -> Tensor:
     """
     This function returns a single embedding for each audio clip. In this baseline
@@ -144,25 +184,21 @@ def get_scene_embeddings(
         audio: n_sounds x n_samples of mono audio in the range [-1, 1]. All sounds in
             a batch will be padded/trimmed to the same length.
         model: Loaded model.
+        cfg_path: 
     Returns:
         - embeddings, A float32 Tensor with shape
             (n_sounds, model.scene_embedding_size).
     """
-    # These attributes are specific to this baseline model
-    n_fft = 1024
-    win_length = 400
-    hop_length = 160
-    n_mels = 64
-    f_min = 60
-    f_max = 7800
+    # Load config file
+    cfg = load_yaml_config(cfg_path)
     to_melspec = MelSpectrogram(
-                        sample_rate=AudioNTT2020.sample_rate,
-                        n_fft=n_fft,
-                        win_length=win_length,
-                        hop_length=hop_length,
-                        n_mels=n_mels,
-                        f_min=f_min,
-                        f_max=f_max,
+                        sample_rate=cfg.sample_rate,
+                        n_fft=cfg.n_fft,
+                        win_length=cfg.win_length,
+                        hop_length=cfg.hop_length,
+                        n_mels=cfg.n_mels,
+                        f_min=cfg.f_min,
+                        f_max=cfg.f_max,
                         ).to(audio.device)
     stats = compute_scene_stats(audio, to_melspec)
     normalizer = PrecomputedNorm(stats)
