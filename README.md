@@ -34,8 +34,9 @@ for each audio clip. This can be computed like so:
 import torch
 import serab_byols
 
+model_name = 'default'
 # Load model with weights - located in the root directory of this repo
-model = serab_byols.load_model("checkpoints/default2048_BYOLAs64x96-2105311814-e100-bs256-lr0003-rs42.pth")
+model = serab_byols.load_model(model_name, "checkpoints/default2048_BYOLAs64x96-2105311814-e100-bs256-lr0003-rs42.pth")
 
 # Create a batch of 2 white noise clips that are 2-seconds long
 # and compute scene embeddings for each clip
@@ -44,5 +45,21 @@ embeddings = serab_byols.get_scene_embeddings(audio, model)
 ```
 
 The `get_timestamp_embeddings` method works exactly the same but returns an array
-of embeddings computed every 50ms over the duration of the input audio. An array
+of embeddings from audio segment computed every 50ms (could be changed) over the duration of the input audio. An array
 of timestamps corresponding to each embedding is also returned.
+
+```python
+import torch
+import serab_byols
+
+model_name = 'cvt'
+# Load model with weights - located in the root directory of this repo
+model = serab_byols.load_model(model_name, "checkpoints/cvt_s1-d1-e64_s2-d1-e256_s3-d1-e512_BYOLAs64x96-osandbyolaloss6373-e100-bs256-lr0003-rs42.pth")
+
+# Create a batch of 2 white noise clips that are 2-seconds long
+# and compute scene embeddings for each clip
+frame_duration = 1000 #ms
+hop_size = 50 #ms
+audio = torch.rand((2, model.sample_rate * 2))
+embeddings, timestamps = serab_byols.get_timestamp_embeddings(audio, model, frame_duration, hop_size)
+```

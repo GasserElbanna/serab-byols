@@ -1,5 +1,5 @@
 """
-Hear Competition submission script following the 
+HEAR Competition submission script following the 
 https://neuralaudio.ai/hear2021-holistic-evaluation-of-audio-representations.html#common-api
 guidelines
 """
@@ -15,7 +15,8 @@ from byol_a.models.cvt import CvT
 from byol_a.common import load_yaml_config
 from serab_byols.utils import *
 
-
+# Default frame duration in milliseconds
+TIMESTAMP_FRAME_DUR = 1000
 # Default hop_size in milliseconds
 TIMESTAMP_HOP_SIZE = 50
 
@@ -59,7 +60,7 @@ def get_model(model_name: str="", cfg: EasyDict={}) -> torch.nn.Module:
     return model
 
 
-def load_model(model_name: str = "", model_file_path: str = "", cfg_path: str = "./config.yaml") -> torch.nn.Module:
+def load_model(model_name: str = "default", model_file_path: str = "", cfg_path: str = "./config.yaml") -> torch.nn.Module:
     """Load pre-trained DL models.
 
     Parameters
@@ -88,7 +89,7 @@ def load_model(model_name: str = "", model_file_path: str = "", cfg_path: str = 
 def get_timestamp_embeddings(
     audio: Tensor,
     model: torch.nn.Module,
-    frame_duration: float = 1000,
+    frame_duration: float = TIMESTAMP_FRAME_DUR,
     hop_size: float = TIMESTAMP_HOP_SIZE,
     cfg_path: str = './config.yaml'
 ) -> Tuple[Tensor, Tensor]:
