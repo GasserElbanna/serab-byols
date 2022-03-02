@@ -26,8 +26,8 @@ setup(
         "torchaudio==0.9.0",
         "tqdm==4.61.1",
         "easydict",
-        "yaml",
-        #"pathlib",
+        #"yaml",
+        "pathlib",
         "einops",
     ],
 )
