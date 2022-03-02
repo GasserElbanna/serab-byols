@@ -27,6 +27,7 @@ setup(
         "tqdm==4.61.1",
         "easydict",
         "yaml",
-        "pathlib"
+        "pathlib",
+        "einops",
     ],
 )
