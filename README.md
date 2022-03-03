@@ -25,10 +25,10 @@ file `checkpoints/default2048_BYOLAs64x96-2105311814-e100-bs256-lr0003-rs42.pth`
 ### Encoders:
 
 The BYOL-S model has been trained with different encoder architectures:
-    - AudioNTT: Original encoder used in [BYOL-A](https://arxiv.org/abs/2103.06695)
-    - Resnetish34: Adapted from this [repo](https://github.com/daisukelab/sound-clf-pytorch/blob/master/src/models.py)
-    - CLSTM: Inspired from this [paper](https://www.degruyter.com/document/doi/10.1515/jisys-2018-0372/html?lang=de#j_jisys-2018-0372_ref_030)
-    - CvT: Adapted from this [repo](https://github.com/lucidrains/vit-pytorch#cvt)
+* AudioNTT: Original encoder used in [BYOL-A](https://arxiv.org/abs/2103.06695)
+* Resnetish34: Adapted from this [repo](https://github.com/daisukelab/sound-clf-pytorch/blob/master/src/models.py)
+* CLSTM: Inspired from this [paper](https://www.degruyter.com/document/doi/10.1515/jisys-2018-0372/html?lang=de#j_jisys-2018-0372_ref_030)
+* CvT: Adapted from this [repo](https://github.com/lucidrains/vit-pytorch#cvt)
 
 
 ### Usage
