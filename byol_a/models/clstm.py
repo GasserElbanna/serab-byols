@@ -2,6 +2,11 @@ from re import X
 import torch.nn as nn
 
 class CLSTM(nn.Module):
+    # sample rate and embedding sizes are required model attributes for the HEAR API
+    sample_rate = 16000
+    embedding_size = 2048
+    scene_embedding_size = embedding_size
+    timestamp_embedding_size = embedding_size
     def __init__(self):
         super().__init__()
         self.conv = nn.Sequential(
