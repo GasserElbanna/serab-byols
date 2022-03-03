@@ -5,7 +5,7 @@ A data-driven audio embedding consisting of a pretrained [BYOL-S](https://arxiv.
 
 ### Installation
 
-Tested with Python 3.8.
+Tested with Python 3.8 and 3.7.
 
 **Method: pip local source tree**
 
