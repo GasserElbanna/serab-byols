@@ -11,6 +11,8 @@ from torch import Tensor
 from torchaudio.transforms import MelSpectrogram
 from byol_a.augmentations import PrecomputedNorm
 from byol_a.models.audio_ntt import AudioNTT2020
+from byol_a.models.clstm import CLSTM
+from byol_a.models.resnetish import resnetish34
 from byol_a.models.cvt import CvT
 from byol_a.common import load_yaml_config
 from serab_byols.utils import *
@@ -37,6 +39,12 @@ def get_model(model_name: str="", cfg: EasyDict={}) -> torch.nn.Module:
     """
     if model_name == 'default':
         model = AudioNTT2020(n_mels=cfg.n_mels, d=cfg.feature_d)
+    
+    elif model_name == 'resnetish34':
+        model = resnetish34()
+    
+    elif model_name == 'clstm':
+        model = CLSTM()
 
     elif model_name == 'cvt':
         s1_depth, s2_depth, s3_depth = cfg.depths
