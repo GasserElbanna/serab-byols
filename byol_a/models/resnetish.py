@@ -158,7 +158,11 @@ class Bottleneck(nn.Module):
         return out
 
 class ResNetish(nn.Module):
-
+    # sample rate and embedding sizes are required model attributes for the HEAR API
+    sample_rate = 16000
+    embedding_size = 2048
+    scene_embedding_size = embedding_size
+    timestamp_embedding_size = embedding_size
     def __init__(
         self,
         block: Type[Union[BasicBlock, Bottleneck]],
