@@ -22,7 +22,7 @@ setup(
         "librosa==0.8.1",
         "numba==0.48",
         "numpy==1.19.2",
-        "torch",
+        "torch==1.9.0",
         "torchaudio==0.9.0",
         "tqdm==4.61.1",
         "easydict",
