@@ -68,7 +68,7 @@ def get_model(model_name: str="", cfg: EasyDict={}) -> torch.nn.Module:
     return model
 
 
-def load_model(model_file_path: str = "", model_name: str = "default", cfg_path: str = "./config.yaml") -> torch.nn.Module:
+def load_model(model_file_path: str = "", model_name: str = "default", cfg_path: str = "./serab-byols/serab_byols/config.yaml") -> torch.nn.Module:
     """Load pre-trained DL models.
 
     Parameters
@@ -99,7 +99,7 @@ def get_timestamp_embeddings(
     model: torch.nn.Module,
     frame_duration: float = TIMESTAMP_FRAME_DUR,
     hop_size: float = TIMESTAMP_HOP_SIZE,
-    cfg_path: str = './config.yaml'
+    cfg_path: str = './serab-byols/serab_byols/config.yaml'
 ) -> Tuple[Tensor, Tensor]:
     """
     This function returns embeddings at regular intervals centered at timestamps. Both
@@ -183,7 +183,7 @@ def get_timestamp_embeddings(
 def get_scene_embeddings(
     audio: Tensor,
     model: torch.nn.Module,
-    cfg_path: str = './config.yaml'
+    cfg_path: str = './serab-byols/serab_byols/config.yaml'
 ) -> Tensor:
     """
     This function returns a single embedding for each audio clip. In this baseline
