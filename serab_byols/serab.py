@@ -4,7 +4,7 @@ https://neuralaudio.ai/hear2021-holistic-evaluation-of-audio-representations.htm
 guidelines
 """
 
-from typing import Tuple
+from typing import List, Tuple
 from easydict import EasyDict
 import torch
 from torch import Tensor
@@ -95,7 +95,7 @@ def load_model(model_file_path: str = "", model_name: str = "default", cfg_path:
     return model
 
 def get_timestamp_embeddings(
-    audio: Tensor,
+    audio_list: List,
     model: torch.nn.Module,
     frame_duration: float = TIMESTAMP_FRAME_DUR,
     hop_size: float = TIMESTAMP_HOP_SIZE,
@@ -105,7 +105,7 @@ def get_timestamp_embeddings(
     This function returns embeddings at regular intervals centered at timestamps. Both
     the embeddings and corresponding timestamps (in milliseconds) are returned.
     Args:
-        audio: n_sounds x n_samples of mono audio in the range [-1, 1].
+        audio_list: List of torch tensor audios.
         model: Loaded model.
         frame_duration: Frame (segement) duration in milliseconds
         hop_size: Hop size in milliseconds.
@@ -119,12 +119,6 @@ def get_timestamp_embeddings(
             to each embedding in the output. Shape: (n_sounds, n_timestamps).
     """
 
-    # Assert audio is of correct shape
-    if audio.ndim != 2:
-        raise ValueError(
-            "audio input tensor must be 2D with shape (n_sounds, num_samples)"
-        )
-
     # Load config file
     cfg = load_yaml_config(cfg_path)
     to_melspec = MelSpectrogram(
@@ -135,15 +129,15 @@ def get_timestamp_embeddings(
                         n_mels=cfg.n_mels,
                         f_min=cfg.f_min,
                         f_max=cfg.f_max,
-                        ).to(audio.device)
+                        ).to(audio_list[0].device)
 
     # Send the model to the same device that the audio tensor is on.
-    model = model.to(audio.device)
+    model = model.to(audio_list[0].device)
 
     # Split the input audio signals into frames and then flatten to create a tensor
     # of audio frames that can be batch processed.
     frames, timestamps = frame_audio(
-        audio,
+        audio_list,
         frame_size=(frame_duration/1000)*cfg.sample_rate,
         hop_size=hop_size,
         sample_rate=cfg.sample_rate,
@@ -153,7 +147,7 @@ def get_timestamp_embeddings(
 
     # Convert audio frames to Log Mel-spectrograms
     melspec_frames = ((to_melspec(frames) + torch.finfo(torch.float).eps).log())
-    normalizer = PrecomputedNorm(compute_stats(melspec_frames))
+    normalizer = PrecomputedNorm(compute_timestamp_stats(melspec_frames))
     melspec_frames = normalizer(melspec_frames).unsqueeze(0)
     melspec_frames = melspec_frames.permute(1, 0, 2, 3)
     
@@ -181,7 +175,7 @@ def get_timestamp_embeddings(
 
 
 def get_scene_embeddings(
-    audio: Tensor,
+    audio_list: List,
     model: torch.nn.Module,
     cfg_path: str = './serab-byols/serab_byols/config.yaml'
 ) -> Tensor:
@@ -190,8 +184,7 @@ def get_scene_embeddings(
     implementation we simply summarize the temporal embeddings from
     get_timestamp_embeddings() using torch.mean().
     Args:
-        audio: n_sounds x n_samples of mono audio in the range [-1, 1]. All sounds in
-            a batch will be padded/trimmed to the same length.
+        audio_list: list of torch tensor audios (audios should be resampled to 16kHz).
         model: Loaded model.
         cfg_path: 
     Returns:
@@ -208,8 +201,8 @@ def get_scene_embeddings(
                         n_mels=cfg.n_mels,
                         f_min=cfg.f_min,
                         f_max=cfg.f_max,
-                        ).to(audio.device)
-    stats = compute_scene_stats(audio, to_melspec)
+                        ).to(audio_list.device)
+    stats = compute_scene_stats(audio_list, to_melspec)
     normalizer = PrecomputedNorm(stats)
-    embeddings = generate_byols_embeddings(model, audio, to_melspec, normalizer)
+    embeddings = generate_byols_embeddings(model, audio_list, to_melspec, normalizer)
     return embeddings

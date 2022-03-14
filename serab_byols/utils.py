@@ -24,7 +24,7 @@ def compute_scene_stats(audios, to_melspec):
     stats = [mean.item(), std.item()]
     return stats
 
-def compute_stats(melspec):
+def compute_timestamp_stats(melspec):
     """Compute statistics of the mel-spectrograms.
 
     Parameters
