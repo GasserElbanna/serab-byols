@@ -36,8 +36,9 @@ The BYOL-S model has been trained with different encoder architectures:
 Audio embeddings can be computed using one of two methods: 1)
 `get_scene_embeddings`, or 2) `get_timestamp_embeddings`.
 
-`get_scene_embeddings` accepts a batch of audio clips and produces a single embedding
-for each audio clip. This can be computed like so:
+`get_scene_embeddings` accepts a batch of audio clips (list of torch tensors) and generates a single embedding
+for each audio clip. This can be computed as shown below:
+
 ```python
 import torch
 import serab_byols
