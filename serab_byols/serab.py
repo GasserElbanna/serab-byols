@@ -201,8 +201,9 @@ def get_scene_embeddings(
                         n_mels=cfg.n_mels,
                         f_min=cfg.f_min,
                         f_max=cfg.f_max,
-                        ).to(audio_list.device)
+                        ).to(audio_list[0].device)
     stats = compute_scene_stats(audio_list, to_melspec)
     normalizer = PrecomputedNorm(stats)
+    model = model.to(audio_list[0].device)
     embeddings = generate_byols_embeddings(model, audio_list, to_melspec, normalizer)
     return embeddings
