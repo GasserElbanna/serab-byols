@@ -86,3 +86,16 @@ embeddings, timestamps = serab_byols.get_timestamp_embeddings(audio, model, fram
 ```
 
 NOTE: All BYOL-S variants were pretrained on audios with sampling rate 16kHz. Make sure to resample your dataset to 16kHz to be compatible with the model's requirements.
+
+### Citations
+
+If you are using this package please cite the [paper](https://arxiv.org/abs/2203.16637):
+
+```python
+@article{elbanna2022hybrid,
+  title={Hybrid Handcrafted and Learnable Audio Representation for Analysis of Speech Under Cognitive and Physical Load},
+  author={Elbanna, Gasser and Biryukov, Alice and Scheidwasser-Clow, Neil and Orlandic, Lara and Mainar, Pablo and Kegler, Mikolaj and Beckmann, Pierre and Cernak, Milos},
+  journal={arXiv preprint arXiv:2203.16637},
+  year={2022}
+}
+```
