@@ -7,7 +7,7 @@ BYOL-S model was pretrained on a subset of [AudioSet](https://research.google.co
 In this repo, we provide the weights for [BYOL-S](https://arxiv.org/abs/2110.03414) and [Hybrid BYOL-S](https://arxiv.org/abs/2203.16637). In addition to a package called *serab-byols* to facilitate generating these speech representations.
 
 
-## Demo
+### Demo
 * A quick demo demonstrating the extraction of Hybrid BYOL-S embeddings on a Colab notebook is available [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1tvL-_rAY6uYPGLrcdSFJoaFG1mkOZkud#scrollTo=_MMd-YD6wke6)
 
 
