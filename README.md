@@ -7,6 +7,10 @@ BYOL-S model was pretrained on a subset of [AudioSet](https://research.google.co
 In this repo, we provide the weights for [BYOL-S](https://arxiv.org/abs/2110.03414) and [Hybrid BYOL-S](https://arxiv.org/abs/2203.16637). In addition to a package called *serab-byols* to facilitate generating these speech representations.
 
 
+## Demo
+* A quick demo demonstrating the extraction of Hybrid BYOL-S embeddings on a Colab notebook is available [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1tvL-_rAY6uYPGLrcdSFJoaFG1mkOZkud#scrollTo=_MMd-YD6wke6)
+
+
 ### Installation
 
 Tested with Python 3.7 and 3.8.
@@ -54,11 +58,11 @@ import torch
 import serab_byols
 
 model_name = 'cvt'
-checkpoint_path = "checkpoints/cvt_s1-d1-e64_s2-d1-e256_s3-d1-e512_BYOLAs64x96-osandbyolaloss6373-e100-bs256-lr0003-rs42.pth"
+checkpoint_path = "serab-byols/checkpoints/cvt_s1-d1-e64_s2-d1-e256_s3-d1-e512_BYOLAs64x96-osandbyolaloss6373-e100-bs256-lr0003-rs42.pth"
 # Load model with weights - located in the root directory of this repo
 model = serab_byols.load_model(checkpoint_path, model_name)
 
-# Create a batch of 2 white noise clips that are 2-seconds long for the sake of example
+# Create a batch of 2 white noise clips that are 2-seconds long as a dummy example
 # and compute scene embeddings for each clip
 audio = torch.rand((2, model.sample_rate * 2))
 embeddings = serab_byols.get_scene_embeddings(audio, model)
@@ -73,11 +77,11 @@ import torch
 import serab_byols
 
 model_name = 'default'
-checkpoint_path = 'checkpoints/default2048_BYOLAs64x96-2105311814-e100-bs256-lr0003-rs42.pth'
+checkpoint_path = 'serab-byols/checkpoints/default2048_BYOLAs64x96-2105311814-e100-bs256-lr0003-rs42.pth'
 # Load model with weights - located in the root directory of this repo
 model = serab_byols.load_model(checkpoint_path, model_name)
 
-# Create a batch of 2 white noise clips that are 2-seconds long for the sake of example
+# Create a batch of 2 white noise clips that are 2-seconds long as a dummy example
 # and compute scene embeddings for each clip
 frame_duration = 1000 #ms
 hop_size = 50 #ms
