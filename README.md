@@ -8,7 +8,7 @@ In this repo, we provide the weights for [BYOL-S](https://arxiv.org/abs/2110.034
 
 
 ### Demo
-* A quick demo demonstrating the extraction of Hybrid BYOL-S embeddings on a Colab notebook is available [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1tvL-_rAY6uYPGLrcdSFJoaFG1mkOZkud#scrollTo=_MMd-YD6wke6)
+* A quick demo demonstrating the extraction of Hybrid BYOL-S embeddings on a Colab notebook is available [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1tvL-_rAY6uYPGLrcdSFJoaFG1mkOZkud?usp=sharing)
 
 
 ### Installation
