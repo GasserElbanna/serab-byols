@@ -82,7 +82,7 @@ def load_model(model_file_path: str = "", model_name: str = "default", cfg_path:
     torch.nn.Module object or a tensorflow "trackable" object
         Model loaded with pre-training weights
     """
-    assert model_name in model_file_path.split('_')[0], "The checkpoint doesn't match with the selected model name"
+    # assert model_name in model_file_path.split('_')[0], "The checkpoint doesn't match with the selected model name"
 
     # Load config file
     cfg = load_yaml_config(cfg_path)
