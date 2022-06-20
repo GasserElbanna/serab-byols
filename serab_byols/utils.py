@@ -98,7 +98,8 @@ def generate_byols_embeddings(
     model,
     audios,
     to_melspec,
-    normalizer):
+    normalizer,
+    device):
     """
     Generate audio embeddings from a pretrained feature extractor.
 
@@ -131,8 +132,8 @@ def generate_byols_embeddings(
         param.requires_grad = False
     with torch.no_grad():
         for audio in tqdm(audios, desc=f'Generating Embeddings...', total=len(audios)):
-            lms = normalizer((to_melspec(audio.unsqueeze(0)) + torch.finfo(torch.float).eps).log()).unsqueeze(0)
-            embedding = model(lms.to(audio.device))
+            lms = normalizer((to_melspec(audio.to(device).unsqueeze(0)) + torch.finfo(torch.float).eps).log()).unsqueeze(0)
+            embedding = model(lms)
             embeddings.append(embedding)
     embeddings = torch.cat(embeddings, dim=0)
     return embeddings

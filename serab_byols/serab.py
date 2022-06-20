@@ -191,6 +191,8 @@ def get_scene_embeddings(
         - embeddings, A float32 Tensor with shape
             (n_sounds, model.scene_embedding_size).
     """
+    # Check if device has cuda
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     # Load config file
     cfg = load_yaml_config(cfg_path)
     to_melspec = MelSpectrogram(
@@ -201,9 +203,9 @@ def get_scene_embeddings(
                         n_mels=cfg.n_mels,
                         f_min=cfg.f_min,
                         f_max=cfg.f_max,
-                        ).to(audio_list[0].device)
+                        ).to(device)
     stats = compute_scene_stats(audio_list, to_melspec)
     normalizer = PrecomputedNorm(stats)
-    model = model.to(audio_list[0].device)
-    embeddings = generate_byols_embeddings(model, audio_list, to_melspec, normalizer)
+    model = model.to(device)
+    embeddings = generate_byols_embeddings(model, audio_list, to_melspec, normalizer, device)
     return embeddings
