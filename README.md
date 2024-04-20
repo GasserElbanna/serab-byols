@@ -96,7 +96,6 @@ NOTE: All BYOL-S variants were pretrained on audios with sampling rate 16kHz. Ma
 If you are using this package please cite these papers:
 
 ```python
-
 @inproceedings{elbanna2022byol,
   title={Byol-s: Learning self-supervised speech representations by bootstrapping},
   author={Elbanna, Gasser and Scheidwasser-Clow, Neil and Kegler, Mikolaj and Beckmann, Pierre and El Hajal, Karl and Cernak, Milos},
@@ -105,7 +104,6 @@ If you are using this package please cite these papers:
   year={2022},
   organization={PMLR}
 }
-
 @article{elbanna2022hybrid,
   title={Hybrid Handcrafted and Learnable Audio Representation for Analysis of Speech Under Cognitive and Physical Load},
   author={Elbanna, Gasser and Biryukov, Alice and Scheidwasser-Clow, Neil and Orlandic, Lara and Mainar, Pablo and Kegler, Mikolaj and Beckmann, Pierre and Cernak, Milos},
