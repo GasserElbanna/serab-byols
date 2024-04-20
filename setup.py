@@ -7,7 +7,7 @@ setup(
     name="serab_byols",
     description="Data-driven Audio Representation 2021",
     author="Logitech",
-    author_email="gasser.elbanna@epfl.ch",
+    author_email="gelbanna@mit.edu",
     url="",
     license="MIT License",
     long_description=long_description,
@@ -17,7 +17,7 @@ setup(
         "Source Code": "",
     },
     packages=find_packages(exclude=("tests",)),
-    python_requires=">=3.7",
+    python_requires=">=3.8",
     install_requires=[
         "librosa",
         "numba",
