@@ -3,7 +3,7 @@ HEAR Competition submission script following the
 https://neuralaudio.ai/hear2021-holistic-evaluation-of-audio-representations.html#common-api
 guidelines
 """
-
+from pathlib import Path
 from typing import List, Tuple
 from easydict import EasyDict
 import torch
@@ -68,7 +68,7 @@ def get_model(model_name: str="", cfg: EasyDict={}) -> torch.nn.Module:
     return model
 
 
-def load_model(model_file_path: str = "", model_name: str = "default", cfg_path: str = "./serab-byols/serab_byols/config.yaml") -> torch.nn.Module:
+def load_model(model_file_path: str = "", model_name: str = "default", cfg_path: str = None) -> torch.nn.Module:
     """Load pre-trained DL models.
 
     Parameters
@@ -85,6 +85,7 @@ def load_model(model_file_path: str = "", model_name: str = "default", cfg_path:
     # assert model_name in model_file_path.split('_')[0], "The checkpoint doesn't match with the selected model name"
 
     # Load config file
+    cfg_path = cfg_path or Path(__file__).parent / "config.yaml"
     cfg = load_yaml_config(cfg_path)
 
     # Load pretrained weights.
@@ -99,7 +100,7 @@ def get_timestamp_embeddings(
     model: torch.nn.Module,
     frame_duration: float = TIMESTAMP_FRAME_DUR,
     hop_size: float = TIMESTAMP_HOP_SIZE,
-    cfg_path: str = './serab-byols/serab_byols/config.yaml'
+    cfg_path: str = None
 ) -> Tuple[Tensor, Tensor]:
     """
     This function returns embeddings at regular intervals centered at timestamps. Both
@@ -120,6 +121,7 @@ def get_timestamp_embeddings(
     """
 
     # Load config file
+    cfg_path = cfg_path or Path(__file__).parent / "config.yaml"
     cfg = load_yaml_config(cfg_path)
     to_melspec = MelSpectrogram(
                         sample_rate=cfg.sample_rate,
@@ -177,7 +179,7 @@ def get_timestamp_embeddings(
 def get_scene_embeddings(
     audio_list: List,
     model: torch.nn.Module,
-    cfg_path: str = './serab-byols/serab_byols/config.yaml'
+    cfg_path: str = None
 ) -> Tensor:
     """
     This function returns a single embedding for each audio clip. In this baseline
@@ -194,6 +196,7 @@ def get_scene_embeddings(
     # Check if device has cuda
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     # Load config file
+    cfg_path = cfg_path or Path(__file__).parent / "config.yaml"
     cfg = load_yaml_config(cfg_path)
     to_melspec = MelSpectrogram(
                         sample_rate=cfg.sample_rate,
